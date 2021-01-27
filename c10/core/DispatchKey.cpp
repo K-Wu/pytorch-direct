@@ -119,6 +119,9 @@ const char* toString(DispatchKey t) {
     case DispatchKey::TESTING_ONLY_GenericMode:
       return "TESTING_ONLY_GenericMode";
 
+    case DispatchKey::Unified:
+      return "Unified";
+
     default:
       return "UNKNOWN_TENSOR_TYPE_ID";
   }

@@ -410,6 +410,7 @@ def gen_pyi(native_yaml_path: str, deprecated_yaml_path: str, fm: FileManager) -
         'contiguous': ['def contiguous(self, memory_format=torch.contiguous_format) -> Tensor: ...'],
         'is_contiguous': ['def is_contiguous(self, memory_format=torch.contiguous_format) -> _bool: ...'],
         'is_cuda': ['is_cuda: _bool'],
+        'is_unified': ['is_unified: _bool'],
         'is_leaf': ['is_leaf: _bool'],
         'is_sparse': ['is_sparse: _bool'],
         'is_quantized': ['is_quantized: _bool'],

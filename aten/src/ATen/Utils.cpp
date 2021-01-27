@@ -29,12 +29,14 @@ Tensor empty_cpu(
     c10::optional<c10::MemoryFormat> memory_format_opt) {
   Device device = device_or_default(device_opt);
 
-  TORCH_CHECK(device.type() == DeviceType::CPU);
+  TORCH_CHECK(device.type() == DeviceType::CPU || device.type() == DeviceType::Unified);
   check_size_nonnegative(size);
 
   bool pin_memory = pinned_memory_or_default(pin_memory_opt);
   c10::Allocator* allocator;
-  if (pin_memory) {
+  if (device.type() == DeviceType::Unified){
+    allocator = detail::getCUDAHooks().getUVMAllocator();
+  } else if (pin_memory) {
     allocator = detail::getCUDAHooks().getPinnedMemoryAllocator();
   } else {
     allocator = at::getCPUAllocator();
@@ -50,8 +52,16 @@ Tensor empty_cpu(
       allocator,
       /*resizeable=*/true);
 
+  at::DispatchKey dispatch_key;
+  if (device.type() == DeviceType::Unified){
+    dispatch_key = at::DispatchKey::Unified;
+  }
+  else{
+    dispatch_key = at::DispatchKey::CPU;
+  }
+
   auto tensor = detail::make_tensor<TensorImpl>(
-      std::move(storage_impl), at::DispatchKey::CPU, dtype);
+      std::move(storage_impl), dispatch_key, dtype);
   // Default TensorImpl has size [0]
   if (size.size() != 1 || size[0] != 0) {
     tensor.unsafeGetTensorImpl()->set_sizes_contiguous(size);

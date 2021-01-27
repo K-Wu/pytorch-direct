@@ -26,11 +26,12 @@ enum class DeviceType : int8_t {
   Vulkan = 10, // Vulkan
   Metal = 11, // Metal
   XPU = 12, // XPU
+  Unified = 13,
   // NB: If you add more devices:
   //  - Change the implementations of DeviceTypeName and isValidDeviceType
   //    in DeviceType.cpp
   //  - Change the number below
-  COMPILE_TIME_MAX_DEVICE_TYPES = 13,
+  COMPILE_TIME_MAX_DEVICE_TYPES = 14,
 };
 
 constexpr DeviceType kCPU = DeviceType::CPU;
@@ -42,6 +43,7 @@ constexpr DeviceType kXLA = DeviceType::XLA;
 constexpr DeviceType kVulkan = DeviceType::Vulkan;
 constexpr DeviceType kMetal = DeviceType::Metal;
 constexpr DeviceType kXPU = DeviceType::XPU;
+constexpr DeviceType kUnified = DeviceType::Unified;
 
 // define explicit int constant
 constexpr int COMPILE_TIME_MAX_DEVICE_TYPES =

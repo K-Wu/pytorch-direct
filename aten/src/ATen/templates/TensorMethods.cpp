@@ -81,6 +81,19 @@ bool Tensor::is_cuda() const {
   return impl_->is_cuda();
 }
 
+bool Tensor::is_cuda_or_unified() const {
+  return impl_->is_unified() || impl_->is_cuda();
+}
+
+bool Tensor::is_unified() const {
+  return impl_->is_unified();
+}
+
+bool is_unified(Tensor self) {
+  return self.is_unified();
+}
+
+
 bool Tensor::is_xpu() const {
   // NB: this is not a native function to avoid dispatching overhead.
   return impl_->is_xpu();

@@ -141,6 +141,8 @@ static inline Backend dispatchKeyToBackend(DispatchKey t) {
     return Backend::QuantizedXPU;
   } else if (t == DispatchKey::Undefined) {
     return Backend::Undefined;
+  } else if (t == DispatchKey::Unified) {
+    return Backend::CUDA; // specify CUDA as an ad hoc solution here  
   } else {
     AT_ERROR("Unrecognized tensor type ID: ", t);
   }

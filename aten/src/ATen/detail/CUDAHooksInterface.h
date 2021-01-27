@@ -125,6 +125,10 @@ struct TORCH_API CUDAHooksInterface {
     TORCH_CHECK(false, "Pinned memory requires CUDA. ", CUDA_HELP);
   }
 
+  virtual Allocator* getUVMAllocator() const {
+    TORCH_CHECK(false, "UVM Allocator requires CUDA. ", CUDA_HELP);
+  }
+
   virtual Allocator* getCUDADeviceAllocator() const {
     TORCH_CHECK(false, "CUDADeviceAllocator requires CUDA. ", CUDA_HELP);
   }

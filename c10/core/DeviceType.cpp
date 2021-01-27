@@ -29,6 +29,8 @@ std::string DeviceTypeName(DeviceType d, bool lower_case) {
       return lower_case ? "xla" : "XLA";
     case DeviceType::Vulkan:
       return lower_case ? "vulkan" : "VULKAN";
+    case DeviceType::Unified:
+      return lower_case ? "unified" : "UNIFIED";
     case DeviceType::Metal:
       return lower_case ? "metal" : "METAL";
     case DeviceType::XPU:

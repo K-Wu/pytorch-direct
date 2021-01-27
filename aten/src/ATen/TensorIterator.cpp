@@ -1,4 +1,5 @@
 #include <ATen/native/TensorIterator.h>
+#include <c10/cuda/CUDAFunctions.h>
 
 #include <array>
 #include <ATen/ExpandUtils.h>
@@ -268,6 +269,35 @@ void TensorIteratorBase::compute_types(const TensorIteratorConfig& config) {
   bool has_different_output_dtypes = false;
   bool has_undefined_outputs = false;
 
+  bool has_op_on_cuda = false;
+  bool has_op_not_on_cuda_or_cpu_scalar = false;
+  int num_cpu_scalars=0;
+  for (auto& op: operands_){
+    if (!op.is_type_defined() || !op.tensor.defined()){
+      continue;
+    }
+    if (op.tensor.device().is_cuda()){
+      has_op_on_cuda=true;
+    }
+    else if (op.tensor.device().is_cpu() && op.tensor.dim()==0){
+      //printf("Caught cpu scalar\n");
+      num_cpu_scalars++;
+    }
+    else if (op.tensor.device().is_unified()){
+      //printf("Caught unified scalar\n");
+      continue;
+    }
+    else{
+      //printf("Caught has_op_not_on_cuda_or_cpu_scalar");
+      //printf(" .is_cpu() %d dim %ld\n",op.tensor.device().is_cpu(),op.tensor.dim());
+      has_op_not_on_cuda_or_cpu_scalar = true;
+    }
+  }
+  int _max_cpu_scalars_on_cuda = config.allow_cpu_scalars_ ? 2 : 1;
+  bool unified_can_schedule_on_cuda = has_op_on_cuda || (!has_op_not_on_cuda_or_cpu_scalar && num_cpu_scalars<_max_cpu_scalars_on_cuda);
+  //printf("unified_can_schedule_on_cuda %d\n",unified_can_schedule_on_cuda);
+
+
   for (auto& op : operands_) {
     // Validates that all inputs have type information, and that
     //   if an output is missing type information that we can infer
@@ -276,7 +306,12 @@ void TensorIteratorBase::compute_types(const TensorIteratorConfig& config) {
       TORCH_INTERNAL_ASSERT(op.is_output, "Found type undefined input tensor!");
       if (config.static_dtype_and_device_.has_value()) {
         op.target_dtype = config.static_dtype_and_device_->first;
-        op.device = config.static_dtype_and_device_->second;
+        if (unified_can_schedule_on_cuda){
+          op.device = Device(kCUDA, cuda::current_device()); // overwrite result device when self is unified and the operation can be scheduled onto cuda.
+        }
+        else{
+          op.device = config.static_dtype_and_device_->second;
+        }
       } else {
         TORCH_INTERNAL_ASSERT(config.check_all_same_device_);
         has_undefined_outputs = true;
@@ -294,7 +329,17 @@ void TensorIteratorBase::compute_types(const TensorIteratorConfig& config) {
 
     // Acquires the first non-CPU device (if any) as the common device
     if (common_device == kCPU && !op.tensor.device().is_cpu()) {
-      common_device = op.tensor.device();
+      if (!op.tensor.device().is_unified()){
+        common_device = op.tensor.device();
+      }
+      else{
+        if (unified_can_schedule_on_cuda){
+          common_device = Device(kCUDA, cuda::current_device());
+        }
+        else{
+          common_device = kCPU;
+        }
+      }
     }
 
     // Determines if there are varying input dtypes
@@ -382,7 +427,7 @@ void TensorIteratorBase::compute_types(const TensorIteratorConfig& config) {
         TORCH_CHECK(current_cpu_scalars_on_cuda < max_cpu_scalars_on_cuda,
                     "Trying to pass too many CPU scalars to CUDA kernel!");
         ++current_cpu_scalars_on_cuda;
-      } else if (op.device != common_device) {
+      } else if (op.device != common_device  && !op.device.is_unified()) {
         TORCH_CHECK(false,
                     "Expected all tensors to be on the same device, but "
                     "found at least two devices, ", common_device, " and ", op.device, "!");

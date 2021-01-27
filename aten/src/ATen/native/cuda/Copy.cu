@@ -99,7 +99,7 @@ static bool copy_requires_temporaries(TensorIterator& iter, bool p2p_enabled) {
 
   if (dst_device == src_device) {
     // We never require temporaries for copies on the same GPU.
-    TORCH_INTERNAL_ASSERT(dst_device.is_cuda() && src_device.is_cuda());
+    TORCH_INTERNAL_ASSERT(dst_device.is_cuda_or_unified() && src_device.is_cuda_or_unified());
     return false;
   }
 
@@ -107,7 +107,7 @@ static bool copy_requires_temporaries(TensorIterator& iter, bool p2p_enabled) {
   if (same_dtype && iter.is_contiguous()) {
     // Contiguous same-dtype copies can always use cudaMemcpyAsync
     return false;
-  } else if (dst_device.is_cuda() && src_device.is_cuda()) {
+  } else if (dst_device.is_cuda_or_unified() && src_device.is_cuda_or_unified()) {
     // Copies between GPUs can use the copy kernel if P2P is supported
     return !p2p_enabled;
   } else {
@@ -118,7 +118,7 @@ static bool copy_requires_temporaries(TensorIterator& iter, bool p2p_enabled) {
 }
 
 static bool maybe_enable_p2p_access(Device dst_device, Device src_device) {
-  if (dst_device.is_cpu() || src_device.is_cpu()) {
+  if (dst_device.is_cpu_or_unified() || src_device.is_cpu_or_unified()) {
     return false;
   }
   return THCState_getPeerToPeerAccess(
@@ -166,7 +166,7 @@ static void copy_kernel_cuda(TensorIterator& iter, bool non_blocking) {
   }
 
   // Copy on GPU (or between GPUs)
-  if (dst_device.is_cuda() && src_device.is_cuda()) {
+  if (dst_device.is_cuda_or_unified() && src_device.is_cuda_or_unified()) {
     copy_device_to_device(iter, non_blocking);
     return;
   }
@@ -174,10 +174,10 @@ static void copy_kernel_cuda(TensorIterator& iter, bool non_blocking) {
   // Copy between CPU and GPU
   cuda::OptionalCUDAGuard device_guard;
   cudaMemcpyKind kind;
-  if (dst_device.is_cuda() && src_device.is_cpu()) {
+  if (dst_device.is_cuda_or_unified() && src_device.is_cpu()) {
     device_guard.set_device(dst_device);
     kind = cudaMemcpyHostToDevice;
-  } else if (dst_device.is_cpu() && src_device.is_cuda()) {
+  } else if (dst_device.is_cpu() && src_device.is_cuda_or_unified()) {
     device_guard.set_device(src_device);
     kind = cudaMemcpyDeviceToHost;
   } else {

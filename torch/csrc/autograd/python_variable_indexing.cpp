@@ -84,6 +84,9 @@ static inline void invalid_index(PyObject* obj) {
 }
 
 static inline Variable sequenceToVariable(c10::DispatchKey dispatch_key, PyObject* seq) {
+  if (dispatch_key == c10::DispatchKey::Unified){ // TODO: current use ad hoc solution to improve unified performance by reducing redundant UVM allocation
+    dispatch_key = c10::DispatchKey::CUDA;
+  }
   return torch::utils::indexing_tensor_from_data(dispatch_key, kLong, c10::nullopt, seq);
 }
 

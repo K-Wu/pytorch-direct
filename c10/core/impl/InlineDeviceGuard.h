@@ -106,7 +106,7 @@ public:
   template <typename U=T, typename std::enable_if<!std::is_same<U, VirtualGuardImpl>::value, int>::type = 0>
   void set_device(at::Device device) {
     AT_ASSERT((U::static_type == DeviceType::HIP && device.type() == DeviceType::CUDA) ||
-              device.type() == U::static_type);
+              device.type() == U::static_type || device.type()==DeviceType::Unified); // as a workaround for unified
     auto index = device.index();
     if (index == -1) return;
     impl_.setDevice(device);

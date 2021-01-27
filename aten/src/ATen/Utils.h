@@ -34,7 +34,7 @@ static inline TensorImpl* checked_dense_tensor_unwrap(const Tensor& expr, const 
     AT_ERROR("Expected dense tensor but got ", expr.layout(),
              " for argument #", pos, " '", name, "' in call to ", api);
   }
-  if (expr.device().type() != device_type) {
+  if (expr.device().type() != device_type && !expr.device().is_unified()) { // work around: suppress device checking when unified device
     AT_ERROR("Expected object of device type ", device_type, " but got device type ", expr.device().type(),
              " for argument #", pos, " '", name, "' in call to ", api);
   }

@@ -93,8 +93,8 @@ void _amp_foreach_non_finite_check_and_unscale_cuda_(TensorList scaled_grads,
     return;
   }
 
-  TORCH_CHECK(inv_scale.is_cuda(), "inv_scale must be a CUDA tensor.");
-  TORCH_CHECK(found_inf.is_cuda(), "found_inf must be a CUDA tensor.");
+  TORCH_CHECK(inv_scale.is_cuda_or_unified(), "inv_scale must be a CUDA tensor.");
+  TORCH_CHECK(found_inf.is_cuda_or_unified(), "found_inf must be a CUDA tensor.");
   TORCH_CHECK(inv_scale.numel() == 1, "inv_scale must be a 1-element tensor.");
   TORCH_CHECK(found_inf.numel() == 1, "found_inf must be a 1-element tensor.");
   TORCH_CHECK(inv_scale.scalar_type() == at::ScalarType::Float, "inv_scale must be a float tensor.");
@@ -113,7 +113,7 @@ void _amp_foreach_non_finite_check_and_unscale_cuda_(TensorList scaled_grads,
     //  - all scaled_grads are strided
     //  - all scaled_grads are non overlapping and dense
     //  - all scaled_grads are on the same device
-    TORCH_CHECK(scaled_grads[0].is_cuda(), "scaled_grads must be CUDA tensors.");
+    TORCH_CHECK(scaled_grads[0].is_cuda_or_unified(), "scaled_grads must be CUDA tensors.");
     // Sets up MTA launch to use scaled_grads as-is.
     tensor_lists.emplace_back(scaled_grads.vec());
   } else {
@@ -128,7 +128,7 @@ void _amp_foreach_non_finite_check_and_unscale_cuda_(TensorList scaled_grads,
     auto expected_device = scaled_grads[0].device();
     for (const Tensor& t : scaled_grads) {
       // Ensures GradScaler filtered scaled_grads by device.
-      TORCH_CHECK(t.is_cuda(), "one of scaled_grads was not a CUDA tensor.");
+      TORCH_CHECK(t.is_cuda_or_unified(), "one of scaled_grads was not a CUDA tensor.");
       TORCH_CHECK(t.device() == expected_device, "scaled_grads must be on the same device.");
       TORCH_CHECK(t.layout() == at::kStrided, "one of scaled_grads was not a strided tensor.");
       if (!t.is_non_overlapping_and_dense()) {
@@ -223,9 +223,9 @@ Tensor _amp_update_scale_cuda(Tensor& growth_tracker,
                               double backoff_factor,
                               int64_t growth_interval)
 {
-  TORCH_CHECK(growth_tracker.is_cuda(), "growth_tracker must be a CUDA tensor.");
-  TORCH_CHECK(current_scale.is_cuda(), "current_scale must be a CUDA tensor.");
-  TORCH_CHECK(found_inf.is_cuda(), "found_inf must be a CUDA tensor.");
+  TORCH_CHECK(growth_tracker.is_cuda_or_unified(), "growth_tracker must be a CUDA tensor.");
+  TORCH_CHECK(current_scale.is_cuda_or_unified(), "current_scale must be a CUDA tensor.");
+  TORCH_CHECK(found_inf.is_cuda_or_unified(), "found_inf must be a CUDA tensor.");
   TORCH_CHECK(growth_tracker.numel() == 1, "growth_tracker must be a 1-element tensor.");
   TORCH_CHECK(current_scale.numel() == 1, "current_scale must be a 1-element tensor.");
   TORCH_CHECK(found_inf.numel() == 1, "found_inf must be a 1-element tensor.");

@@ -80,7 +80,7 @@ struct TORCH_API DispatchStub<rT (*)(Args...), T> {
         cpu_dispatch_ptr.store(fptr, std::memory_order_relaxed);
       }
       return (*fptr)(std::forward<ArgTypes>(args)...);
-    } else if (device_type == DeviceType::CUDA) {
+    } else if (device_type == DeviceType::CUDA || device_type == DeviceType::Unified) { // TODO: Currently dispatch unified operators governed by Stub onto CPU 
       AT_ASSERTM(cuda_dispatch_ptr, "DispatchStub: missing CUDA kernel");
       return (*cuda_dispatch_ptr)(std::forward<ArgTypes>(args)...);
     } else if (device_type == DeviceType::HIP) {

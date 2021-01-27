@@ -109,6 +109,7 @@ enum class DispatchKey : uint8_t {
   SparseXPU, // For out of tree Intel's heterogeneous computing plug-in
 
   NestedTensor, // lives out of tree at https://github.com/pytorch/nestedtensor
+  Unified,
   // Here are reserved backends for user-defined backends, see Note [Private use
   // DispatchKey]
   // To see some example about how to use this, check out MSNPU

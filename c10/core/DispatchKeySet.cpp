@@ -14,6 +14,7 @@ constexpr DispatchKeySet backend_dispatch_keyset = autogradother_backends |
         DispatchKey::PrivateUse1,
         DispatchKey::PrivateUse2,
         DispatchKey::PrivateUse3,
+        DispatchKey::Unified
     });
 
 bool isBackendDispatchKey(DispatchKey t) {

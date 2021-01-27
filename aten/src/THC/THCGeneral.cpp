@@ -3,6 +3,7 @@
 #include <THC/THCAllocator.h>
 #include <THC/THCCachingHostAllocator.h>
 #include <THC/THCGeneral.hpp>
+#include <THC/THCUVMAllocator.h>
 
 #include <c10/cuda/CUDAFunctions.h>
 #include <c10/cuda/CUDAStream.h>
@@ -42,6 +43,10 @@ void THCudaInit(THCState* state)
 {
   if (!state->cudaHostAllocator) {
     state->cudaHostAllocator = getTHCCachingHostAllocator();
+  }
+
+  if (!state->cudaUVMAllocator){
+    state->cudaUVMAllocator = getTHCUVMAllocator();
   }
 
   // We want to throw if there are no GPUs
@@ -112,6 +117,10 @@ void THCudaShutdown(THCState* state)
     THCCachingHostAllocator_emptyCache();
   }
 
+  if (state->cudaUVMAllocator == getTHCUVMAllocator()) {
+    THCUVMAllocator_emptyCache();
+  }
+
   THCudaCheck(cudaSetDevice(prevDev));
 }
 
@@ -151,6 +160,11 @@ int THCState_getPeerToPeerAccess(THCState* state, int dev, int devToAccess)
 c10::Allocator* THCState_getCudaHostAllocator(THCState* state)
 {
   return state->cudaHostAllocator;
+}
+
+c10::Allocator* THCState_getUVMAllocator(THCState* state)
+{
+  return state->cudaUVMAllocator;
 }
 
 THCCudaResourcesPerDevice* THCState_getDeviceResourcePtr(
@@ -304,6 +318,13 @@ at::DataPtr THCudaHostAlloc(THCState *state, size_t size)
 {
   THCudaCheck(cudaGetLastError());
   c10::Allocator* allocator = state->cudaHostAllocator;
+  return allocator->allocate(size);
+}
+
+at::DataPtr THCudaUVMAlloc(THCState *state, size_t size)
+{
+  THCudaCheck(cudaGetLastError());
+  c10::Allocator* allocator = state->cudaUVMAllocator;
   return allocator->allocate(size);
 }
 

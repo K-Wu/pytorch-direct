@@ -269,7 +269,12 @@ static inline c10::List<c10::optional<Tensor>> typeConvertIndices(const Tensor& 
   for (size_t i = 0; i < indices.size(); ++i) {
     const auto &ind = indices[i];
     if (ind.defined()) {
-      converted_inds.push_back(ind.to(ind.options().device(self.device())));
+      if (self.device().is_unified()&&!ind.device().is_unified()){
+        converted_inds.push_back(ind.to(ind.options().device(kCUDA)));// for purpose of performance improvement
+      }
+      else{
+        converted_inds.push_back(ind.to(ind.options().device(self.device())));
+      }
     } else {
       converted_inds.push_back(std::move(indices[i]));
     }

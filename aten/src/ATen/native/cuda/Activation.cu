@@ -56,8 +56,8 @@ __global__ void prelu_cuda_kernel_multi_weights(
 }
 
 Tensor prelu_cuda(const Tensor& self, const Tensor& weight_) {
-  TORCH_CHECK(self.is_cuda());
-  TORCH_CHECK(weight_.is_cuda());
+  TORCH_CHECK(self.is_cuda_or_unified());
+  TORCH_CHECK(weight_.is_cuda_or_unified());
 
   auto input = self.contiguous();
   auto weight = weight_.contiguous();
@@ -164,9 +164,9 @@ __global__ void prelu_cuda_backward_kernel_multi_weights(
 }
 
 std::tuple<Tensor, Tensor> prelu_backward_cuda(const Tensor& grad_out_, const Tensor& self, const Tensor& weight_) {
-  TORCH_CHECK(grad_out_.is_cuda());
-  TORCH_CHECK(self.is_cuda());
-  TORCH_CHECK(weight_.is_cuda());
+  TORCH_CHECK(grad_out_.is_cuda_or_unified());
+  TORCH_CHECK(self.is_cuda_or_unified());
+  TORCH_CHECK(weight_.is_cuda_or_unified());
 
   auto input = self.contiguous();
   auto grad_out = grad_out_.contiguous();

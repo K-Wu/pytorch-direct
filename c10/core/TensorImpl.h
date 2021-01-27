@@ -491,6 +491,12 @@ struct C10_API TensorImpl : public c10::intrusive_ptr_target {
         key_set_.has(DispatchKey::QuantizedCUDA);
   }
 
+  bool is_unified() const {
+    DispatchKeySet temp(key_set_);
+    printf("DispatchKey %ld\n", temp.raw_repr());
+    return key_set_.has(DispatchKey::Unified);
+  }
+
   bool is_xpu() const {
     // NB: This method is not virtual and avoid dispatches for performance
     // reasons.

@@ -12,6 +12,7 @@
 #include <ATen/detail/CUDAHooksInterface.h>
 #include <ATen/native/cuda/CuFFTPlanCache.h>
 #include <c10/util/Exception.h>
+#include <ATen/cuda/UVMAllocator.h>
 
 #include <THC/THC.h>
 #include <THC/THCGeneral.hpp>
@@ -189,6 +190,10 @@ c10::optional<int64_t> CUDAHooks::getDevceIndexWithPrimaryContext() const {
 
 Allocator* CUDAHooks::getPinnedMemoryAllocator() const {
   return at::cuda::getPinnedMemoryAllocator();
+}
+
+Allocator* CUDAHooks::getUVMAllocator() const {
+  return at::cuda::getUVMAllocator();
 }
 
 Allocator* CUDAHooks::getCUDADeviceAllocator() const {

@@ -633,6 +633,8 @@ inline DispatchKey computeDispatchKey(c10::optional<ScalarType> dtype, c10::opti
             return DispatchKey::Vulkan;
           case DeviceType::Metal:
             return DispatchKey::Metal;
+          case DeviceType::Unified:
+            return DispatchKey::Unified;
           default:
             AT_ERROR("Unsupported device type for dense layout: ", device_.type());
         }
@@ -707,6 +709,8 @@ inline DeviceType computeDeviceType(DispatchKey tid) {
     return DeviceType::XPU;
   } else if (tid == DispatchKey::QuantizedXPU) {
     return DeviceType::XPU;
+  } else if (tid == DispatchKey::Unified) {
+    return DeviceType::Unified;
   } else {
     AT_ASSERTM(false, "Unknown DispatchKey: ", tid);
   }

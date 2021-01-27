@@ -229,7 +229,7 @@ static AdvancedIndex make_info(Tensor self, const torch::List<c10::optional<at::
   }
   // Ensure indices are on the same device as self
   for (size_t i = 0; i < indices.size(); i++) {
-    if (indices[i].defined() && indices[i].device() != self.device()) {
+    if (indices[i].defined() && indices[i].device() != self.device() && !self.device().is_unified() && !indices[i].device().is_unified()) {
       indices[i] = indices[i].to(self.device());
     }
   }

@@ -81,6 +81,19 @@ struct C10_API Device final {
     return type_ == DeviceType::CUDA;
   }
 
+  bool is_cuda_or_unified() const noexcept {
+    return is_cuda() || is_unified();
+  }
+
+  bool is_cpu_or_unified() const noexcept {
+    return is_cpu() || is_unified();
+  }
+
+  /// Return true if the device is of Unified type.
+  bool is_unified() const noexcept {
+    return type_ == DeviceType::Unified;
+  }
+
   /// Return true if the device is of XPU type.
   bool is_xpu() const noexcept {
     return type_ == DeviceType::XPU;
@@ -89,6 +102,12 @@ struct C10_API Device final {
   /// Return true if the device is of CPU type.
   bool is_cpu() const noexcept {
     return type_ == DeviceType::CPU;
+  }
+
+  static bool is_equal_or_unified(Device lhs, Device rhs){
+    if (lhs.is_unified() || rhs.is_unified())
+      return true;
+    return lhs.type_ == rhs.type_;
   }
 
   /// Same string as returned from operator<<.

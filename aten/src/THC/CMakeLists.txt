@@ -36,6 +36,7 @@ endforeach()
 
 set(ATen_CUDA_SRCS ${ATen_CUDA_SRCS}
   ${CMAKE_CURRENT_SOURCE_DIR}/THCCachingHostAllocator.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/THCUVMAllocator.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/THCGeneral.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/THCStorageCopy.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/THCTensor.cpp
@@ -85,6 +86,7 @@ install(FILES
           THCSortUtils.cuh
           THCAllocator.h
           THCCachingHostAllocator.h
+          THCUVMAllocator.h
           THCDeviceUtils.cuh
           THCDeviceTensor.cuh
           THCDeviceTensor-inl.cuh

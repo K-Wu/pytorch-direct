@@ -187,12 +187,12 @@ def is_generic_dispatch_key(dk: str) -> bool:
 
 # CUDA specific dispatch keys
 def is_cuda_dispatch_key(dk: str) -> bool:
-    return 'CUDA' in dk
+    return 'CUDA' in dk or 'Unified' in dk
 
 # Structured kernel generation is only supported for certain key types;
 # otherwise use old-style
 def is_structured_dispatch_key(dk: str) -> bool:
-    return dk in {'CUDA', 'CPU'}
+    return dk in {'CUDA', 'CPU', 'Unified'}
 
 # Generates RegisterSchema.cpp.  Depending on the selector, either
 # all schemas are registered, or only some are (in the case of
@@ -290,7 +290,7 @@ if (strides.empty()) {
             else:
                 expanded_topts = "optTypeMetaToScalarType(options.dtype_opt()), options.layout_opt(), " \
                     "options.device_opt(), options.pinned_memory_opt()"
-                if self.dispatch_key == "CPU":
+                if self.dispatch_key == "CPU" or self.dispatch_key == "Unified":
                     empty_impl = "at::native::empty_cpu"
                     empty_strided_impl = "at::native::empty_strided_cpu"
                 elif self.dispatch_key == "CUDA":
@@ -1295,6 +1295,7 @@ def main() -> None:
         # Meta is a magic key: it is automatically generated for structured
         # kernels
         "Meta",
+        "Unified"
     ]
     # Only a limited set of dispatch keys get CPUFunctions.h headers generated
     # for them; this is the set

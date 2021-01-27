@@ -6,6 +6,7 @@
 #include <ATen/native/TensorFactories.h>
 #include <ATen/native/cuda/Resize.cuh>
 #include <c10/util/Exception.h>
+#include <ATen/cuda/UVMAllocator.h>
 
 #include <THC/THCGeneral.h>
 #include <THC/THCThrustAllocator.cuh>
@@ -42,11 +43,17 @@ Tensor& eye_out_cuda(Tensor& result, int64_t n, int64_t m) {
 }
 
 Tensor empty_cuda(IntArrayRef size, c10::optional<ScalarType> dtype_opt, c10::optional<Layout> layout_opt, c10::optional<Device> device_opt, c10::optional<bool> pin_memory_opt, c10::optional<c10::MemoryFormat> memory_format_opt) {
-  AT_ASSERT(device_or_default(device_opt).type() == at::DeviceType::CUDA);
+  AT_ASSERT(device_or_default(device_opt).type() == at::DeviceType::CUDA || device_or_default(device_opt).type() == at::DeviceType::Unified);
   TORCH_CHECK(!pin_memory_opt.has_value() || !*pin_memory_opt, "Only dense CPU tensors can be pinned");
   check_size_nonnegative(size);
 
-  auto* allocator = at::cuda::getCUDADeviceAllocator();
+  at::Allocator* allocator;
+  if (device_or_default(device_opt).is_unified()){
+    allocator = at::cuda::getUVMAllocator();
+  } 
+  else {
+    allocator = at::cuda::getCUDADeviceAllocator();
+  }
   int64_t nelements = prod_intlist(size);
   auto dtype = dtype_or_default(dtype_opt);
   auto dtype_meta = scalarTypeToTypeMeta(dtype);

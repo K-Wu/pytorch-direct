@@ -339,6 +339,10 @@ class TORCH_API Tensor {
   /// Returns if a `Tensor` has CUDA backend.
   bool is_cuda() const;
 
+  bool is_cuda_or_unified() const;
+
+  bool is_unified() const;
+
   /// Returns if a `Tensor` has XPU backend.
   bool is_xpu() const;
 
