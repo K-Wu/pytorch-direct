@@ -271,7 +271,8 @@ void TensorIteratorBase::compute_types(const TensorIteratorConfig& config) {
 
   bool has_op_on_cuda = false;
   bool has_op_not_on_cuda_or_cpu_scalar = false;
-  int num_cpu_scalars=0;
+  bool has_op_on_unified = false;
+  int num_cpu_scalars = 0;
   for (auto& op: operands_){
     if (!op.is_type_defined() || !op.tensor.defined()){
       continue;
@@ -285,6 +286,7 @@ void TensorIteratorBase::compute_types(const TensorIteratorConfig& config) {
     }
     else if (op.tensor.device().is_unified()){
       //printf("Caught unified scalar\n");
+      has_op_on_unified = true;
       continue;
     }
     else{
@@ -306,10 +308,10 @@ void TensorIteratorBase::compute_types(const TensorIteratorConfig& config) {
       TORCH_INTERNAL_ASSERT(op.is_output, "Found type undefined input tensor!");
       if (config.static_dtype_and_device_.has_value()) {
         op.target_dtype = config.static_dtype_and_device_->first;
-        if (unified_can_schedule_on_cuda){
+        if (unified_can_schedule_on_cuda && has_op_on_unified){
           op.device = Device(kCUDA, cuda::current_device()); // overwrite result device when self is unified and the operation can be scheduled onto cuda.
         }
-        else{
+        else {
           op.device = config.static_dtype_and_device_->second;
         }
       } else {
@@ -327,19 +329,17 @@ void TensorIteratorBase::compute_types(const TensorIteratorConfig& config) {
 
     TORCH_INTERNAL_ASSERT(op.target_dtype == op.current_dtype)
 
-    // Acquires the first non-CPU device (if any) as the common device
     if (common_device == kCPU && !op.tensor.device().is_cpu()) {
-      if (!op.tensor.device().is_unified()){
+      if (unified_can_schedule_on_cuda && has_op_on_unified){
+        common_device = Device(kCUDA, cuda::current_device());
+      }
+      else if (!op.tensor.device().is_unified()){
         common_device = op.tensor.device();
       }
       else{
-        if (unified_can_schedule_on_cuda){
-          common_device = Device(kCUDA, cuda::current_device());
-        }
-        else{
-          common_device = kCPU;
-        }
+        common_device = kCPU; // Acquires the first non-CPU device (if any) as the common device
       }
+      
     }
 
     // Determines if there are varying input dtypes
