@@ -962,6 +962,10 @@ static void uncached_delete(void* ptr) {
   C10_CUDA_CHECK(cudaFreeHost(ptr));
 }
 
+static void unregister(void* ptr) {
+  return;
+}
+
 // NB: I decided not to fold this into UVMTHCCachingAllocator, because the
 // latter has a lot more methods and it wasn't altogether clear that they should
 // actually be publicly exposed
@@ -969,10 +973,21 @@ struct THCUVMCachingAllocator : public at::Allocator {
   THCUVMCachingAllocator() {
     init();
   }
-  at::DataPtr allocate(size_t size) const override {
+  at::DataPtr allocate(size_t size, void* original=NULL) const override {
     int device;
     C10_CUDA_CHECK(cudaGetDevice(&device));
     void* r = nullptr;
+//    printf("THCUVMCachingAllocator: %llu\n", (long long unsigned int)size);
+    if (original != NULL) {
+      C10_CUDA_CHECK(cudaHostRegister(original, size, cudaHostRegisterMapped));
+      C10_CUDA_CHECK(cudaHostGetDevicePointer((void**)&r, original, 0));
+//      for (int i=0; i<8; i++) {
+//        printf("%d, ", ((int*)original)[i]);
+//      }
+//      printf("\n");
+//      printf("cudaHostRegister: %llx, %llx, %llu\n", (long long unsigned int)original, (long long unsigned int)r, (long long unsigned int)size);
+      return {r, r, &unregister, at::DeviceType::Unified};
+    }
     if (forceUncachedAllocator()) {
       C10_CUDA_CHECK(cudaMallocHost(&r, size));
       return {r, r, &uncached_delete, at::DeviceType::Unified};

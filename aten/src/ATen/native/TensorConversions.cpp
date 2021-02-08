@@ -38,7 +38,14 @@ static inline Tensor to_impl(const Tensor& self, const TensorOptions& options, b
       auto r = at::empty_strided(self.sizes(),
                                  self.strides(),
                                  options.memory_format(c10::nullopt).pinned_memory(pin_out));
-      r.copy_(self, non_blocking);
+      int64_t new_size = (r.numel() + r.storage_offset()) * r.dtype().itemsize();
+      if (r.device().is_unified()) {
+//        printf("to_impl: %llu\n", (long long unsigned int)new_size);
+        at::DataPtr new_data = r.storage().allocator()->allocate(new_size, self.storage().data_ptr().get());
+        r.storage().set_data_ptr(std::move(new_data));
+      }
+      else
+        r.copy_(self, non_blocking);
       return r;
     } else {
       memory_format = self.suggest_memory_format();

@@ -961,7 +961,7 @@ static void uncached_delete(void* ptr) {
 // has a lot more methods and it wasn't altogether clear that they should
 // actually be publicly exposed
 struct CudaCachingAllocator : public Allocator {
-  DataPtr allocate(size_t size) const override {
+  DataPtr allocate(size_t size, void* original=NULL) const override {
     int device;
     C10_CUDA_CHECK(cudaGetDevice(&device));
     void* r = nullptr;

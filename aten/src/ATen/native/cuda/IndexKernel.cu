@@ -124,24 +124,60 @@ void gpu_index_kernel(TensorIterator& iter, IntArrayRef index_size, IntArrayRef 
   char* in_ptr = (char*)iter.data_ptr(1);
 
   auto offset_calc = make_offset_calculator<3>(iter);
-  launch_kernel<launch_size_nd, launch_bound2>(iter.numel(), [=]__device__(int idx) {
-    auto offsets = offset_calc.get(idx);
-    char* out_data = out_ptr + offsets[0];
-    char* in_data = in_ptr + offsets[1];
+  if (iter.device(1).is_unified() && strides[0] > 128 && (strides[0] & 0x7F)) {
+    launch_kernel<launch_size_nd, launch_bound2>(iter.numel(), [=]__device__(int idx) {
+      auto offsets = offset_calc.get(idx);
+      char* out_data = out_ptr + offsets[0];
+      char* in_data = in_ptr + offsets[1];
 
-    int64_t offset = 0;
-    #pragma unroll
-    for (int i = 0; i < num_indices; i++) {
-      int64_t index = *(int64_t*)(index_ptrs[i] + offsets[2]);
-      CUDA_KERNEL_ASSERT(index >= -sizes[i] && index < sizes[i] && "index out of bounds");
-      if (index < 0) {
-        index += sizes[i];
+      int64_t offset = 0;
+      #pragma unroll
+      for (int i = 0; i < num_indices; i++) {
+        int64_t index = *(int64_t*)(index_ptrs[i] + offsets[2]);
+        CUDA_KERNEL_ASSERT(index >= -sizes[i] && index < sizes[i] && "index out of bounds");
+        if (index < 0) {
+          index += sizes[i];
+        }
+        offset += index * strides[i];
       }
-      offset += index * strides[i];
-    }
 
-    f(out_data, in_data, offset);
-  });
+      int64_t diff = ((offsets[0] / strides[0]) * strides[0] - offset) % 128;
+
+      in_data = in_data + diff;
+      out_data = out_data + diff;
+
+      if (in_data < in_ptr) {
+        in_data += strides[0];
+        out_data += strides[0];
+      }
+      else if (in_data >= in_ptr + strides[0]) {
+        in_data -= strides[0];
+        out_data -= strides[0];
+      }
+
+      f(out_data, in_data, offset);
+    });
+  }
+  else {
+    launch_kernel<launch_size_nd, launch_bound2>(iter.numel(), [=]__device__(int idx) {
+      auto offsets = offset_calc.get(idx);
+      char* out_data = out_ptr + offsets[0];
+      char* in_data = in_ptr + offsets[1];
+
+      int64_t offset = 0;
+      #pragma unroll
+      for (int i = 0; i < num_indices; i++) {
+        int64_t index = *(int64_t*)(index_ptrs[i] + offsets[2]);
+        CUDA_KERNEL_ASSERT(index >= -sizes[i] && index < sizes[i] && "index out of bounds");
+        if (index < 0) {
+          index += sizes[i];
+        }
+        offset += index * strides[i];
+      }
+
+      f(out_data, in_data, offset);
+    });
+  }
 }
 
 // The kernels are templated on an opaque, self-aligned type of the correct

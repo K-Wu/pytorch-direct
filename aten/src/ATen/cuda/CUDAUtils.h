@@ -12,7 +12,15 @@ inline bool check_device(ArrayRef<Tensor> ts) {
   }
   Device curDevice = Device(kCUDA, current_device());
   for (const Tensor& t : ts) {
-    if (t.device() != curDevice) return false;
+//    std::cout << t.device().str() << std::endl;
+//    std::cout << t.device().is_unified() << std::endl;
+//    std::cout << t.device().is_cuda() << std::endl;
+    if (t.device() != curDevice) {
+      if (t.device().is_unified() && curDevice.is_cuda())
+        continue;
+      else
+        return false;
+    }
   }
   return true;
 }
