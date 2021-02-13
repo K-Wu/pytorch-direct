@@ -681,6 +681,7 @@ __global__ void indexSelectLargeIndex(cuda::detail::TensorInfo<T, IndexType> dst
 
       //printf("1 srcOffset: %llu, dstOffset: %llu, linearIndex: %llu, dstIndex: %llu, srcIndex: %llu\n", (unsigned long long)srcOffset, (unsigned long long)dstOffset, (unsigned long long)linearIndex, (unsigned long long)dstIndex, (unsigned long long)srcIndex);
 //
+#if 0
       if (align) {
         IndexType diff = (dstoff - srcoff) % 32;
 
@@ -696,6 +697,7 @@ __global__ void indexSelectLargeIndex(cuda::detail::TensorInfo<T, IndexType> dst
           srcOffset -= src.strides[srcSelectDim];
         }
       }
+#endif
 //
       //printf("2 srcOffset: %llu, linearIndex: %llu\n", (unsigned long long)srcOffset, (unsigned long long)linearIndex);
 
