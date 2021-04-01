@@ -4,6 +4,11 @@
 
 #include <c10/core/impl/DeviceGuardImplInterface.h>
 
+#include <cuda.h>
+#include <cuda_runtime.h>
+#include <cuda_fp16.h>
+#include <c10/cuda/CUDAException.h>
+
 namespace at {
 namespace native {
 
@@ -38,14 +43,7 @@ static inline Tensor to_impl(const Tensor& self, const TensorOptions& options, b
       auto r = at::empty_strided(self.sizes(),
                                  self.strides(),
                                  options.memory_format(c10::nullopt).pinned_memory(pin_out));
-      int64_t new_size = (r.numel() + r.storage_offset()) * r.dtype().itemsize();
-      if (r.device().is_unified()) {
-//        printf("to_impl: %llu\n", (long long unsigned int)new_size);
-        at::DataPtr new_data = r.storage().allocator()->allocate(new_size, self.storage().data_ptr().get());
-        r.storage().set_data_ptr(std::move(new_data));
-      }
-      else
-        r.copy_(self, non_blocking);
+      r.copy_(self, non_blocking);
       return r;
     } else {
       memory_format = self.suggest_memory_format();
@@ -57,6 +55,49 @@ static inline Tensor to_impl(const Tensor& self, const TensorOptions& options, b
                      c10::nullopt);
   r.copy_(self, non_blocking);
   return r;
+}
+
+Tensor register_and_calculate_unified_address(
+  const Tensor& self
+) {
+
+  c10::Allocator* allocator = detail::getCUDAHooks().getUVMAllocator();
+  
+  caffe2::TypeMeta dtype = self.dtype();
+  auto ptr = self.storage().data_ptr().get();
+  void* device_ptr;
+  IntArrayRef size = self.sizes();
+
+  C10_CUDA_CHECK(cudaHostRegister(ptr, self.nbytes(), cudaHostRegisterDefault));
+  C10_CUDA_CHECK(cudaHostGetDevicePointer((void**)&device_ptr, ptr, 0));
+
+  at::DataPtr dataptr(device_ptr,device_ptr,nullptr,at::DeviceType::Unified);
+
+  auto storage_impl = c10::make_intrusive<StorageImpl>(
+      c10::StorageImpl::use_byte_size_t(),
+      self.nbytes(),
+      std::move(dataptr),
+      allocator,
+      /*resizeable=*/true);
+
+  auto dispatch_key = at::DispatchKey::Unified;
+  auto tensor = detail::make_tensor<TensorImpl>(
+      std::move(storage_impl), dispatch_key, dtype);
+  // Default TensorImpl has size [0]
+  if (size.size() != 1 || size[0] != 0) {
+    tensor.unsafeGetTensorImpl()->set_sizes_contiguous(size);
+  }
+
+  auto memory_format_opt=self.options().memory_format_opt();
+
+  if (memory_format_opt.has_value()) {
+    // Restriding a just-created empty contiguous tensor does nothing.
+    if (*memory_format_opt != MemoryFormat::Contiguous) {
+      tensor.unsafeGetTensorImpl()->empty_tensor_restride(*memory_format_opt);
+    }
+  }
+
+  return tensor;
 }
 
 Tensor to(

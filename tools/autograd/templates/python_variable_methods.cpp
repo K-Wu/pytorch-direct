@@ -432,6 +432,21 @@ static Tensor dispatch_to(const Tensor & self, Device device, ScalarType dtype, 
   return self.to(device, dtype, non_blocking, copy, optional_memory_format);
 }
 
+static Tensor dispatch_register_and_calculate_unified_address(const Tensor & self){
+  pybind11::gil_scoped_release no_gil;
+  return self.register_and_calculate_unified_address();
+}
+
+static PyObject * THPVariable_register_and_calculate_unified_address(PyObject* self, PyObject* args, PyObject* kwargs)
+{
+  HANDLE_TH_ERRORS
+   auto& self_ = reinterpret_cast<THPVariable*>(self)->cdata;
+   ParsedArgs<1> parsed_args;
+
+   return THPVariable_Wrap(dispatch_register_and_calculate_unified_address(self_));
+   END_HANDLE_TH_ERRORS
+}
+
 static PyObject * THPVariable_cpu(PyObject* self, PyObject* args, PyObject* kwargs)
 {
    HANDLE_TH_ERRORS
@@ -1172,6 +1187,7 @@ PyMethodDef variable_methods[] = {
   {"contiguous", castPyCFunctionWithKeywords(THPVariable_contiguous), METH_VARARGS | METH_KEYWORDS, NULL},
   {"copy_", castPyCFunctionWithKeywords(THPVariable_copy_), METH_VARARGS | METH_KEYWORDS, NULL},
   {"cpu", castPyCFunctionWithKeywords(THPVariable_cpu), METH_VARARGS | METH_KEYWORDS, NULL},
+  {"register_and_calculate_unified_address", castPyCFunctionWithKeywords(THPVariable_register_and_calculate_unified_address), METH_VARARGS | METH_KEYWORDS, NULL},
   {"cuda", castPyCFunctionWithKeywords(THPVariable_cuda), METH_VARARGS | METH_KEYWORDS, NULL},
   {"xpu", castPyCFunctionWithKeywords(THPVariable_xpu), METH_VARARGS | METH_KEYWORDS, NULL},
   {"data_ptr", THPVariable_data_ptr, METH_NOARGS, NULL},

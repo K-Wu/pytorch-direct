@@ -63,6 +63,28 @@ def get_sharing_strategy():
     """Returns the current strategy for sharing CPU tensors."""
     return _sharing_strategy
 
+from functools import wraps
+
+def share_unified(shared_unified_tensors_idxes, shared_unified_tensors_keys):
+    """decorator to process unified tensors in multiprocessing"""
+    def real_decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            new_args=[]
+            for idx, x in enumerate(args):
+                if idx in shared_unified_tensors_idxes:
+                    args_idx=args[idx].register_and_calculate_unified_address()
+                    args_idx.real_storage_tensor=x # avoid storage being garbage-collected
+                    new_args.append(args_idx)
+                else:
+                    new_args.append(args[idx])
+            for key,value in kwargs:
+                if key in shared_unified_tensors_keys:
+                    kwargs[key]=args[idx].register_and_calculate_unified_address()
+                    kwargs[key].real_storage_tensor=value
+            return func(*new_args, **kwargs)
+        return wrapper
+    return real_decorator
 
 def get_all_sharing_strategies():
     """Returns a set of sharing strategies supported on a current system."""

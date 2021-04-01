@@ -100,7 +100,7 @@ void free_cpu(void* data) {
 struct C10_API DefaultCPUAllocator final : at::Allocator {
   DefaultCPUAllocator() {}
   ~DefaultCPUAllocator() override {}
-  at::DataPtr allocate(size_t nbytes, void* original=NULL) const override {
+  at::DataPtr allocate(size_t nbytes) const override {
     void* data = alloc_cpu(nbytes);
     profiledCPUMemoryReporter().New(data, nbytes);
     return {data, data, &ReportAndDelete, at::Device(at::DeviceType::CPU)};
@@ -175,7 +175,7 @@ class DefaultMobileCPUAllocator final : public at::Allocator {
     }
   }
 
-  virtual DataPtr allocate(const size_t nbytes, void* original=NULL) const override {
+  virtual DataPtr allocate(const size_t nbytes) const override {
     if (C10_UNLIKELY(0u == nbytes)) {
       return {
           nullptr,

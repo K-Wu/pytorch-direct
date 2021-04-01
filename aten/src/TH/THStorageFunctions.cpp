@@ -68,23 +68,19 @@ void THStorage_resizeBytes(THStorage* storage, ptrdiff_t size_bytes) {
   if (storage->resizable()) {
     /* case when the allocator does not have a realloc defined */
     at::DataPtr new_data;
-    if (storage->device().is_unified()) {
-      storage->set_nbytes(size_bytes);
-    } else {
-      if (size_bytes != 0) {
-          new_data = storage->allocator()->allocate(size_bytes);
+    if (size_bytes != 0) {
+        new_data = storage->allocator()->allocate(size_bytes);
+    }
+    at::DataPtr old_data = storage->set_data_ptr(std::move(new_data));
+    ptrdiff_t old_capacity = storage->nbytes();
+    storage->set_nbytes(size_bytes);
+    if (old_data != nullptr) {
+      ptrdiff_t copy_capacity = old_capacity;
+      if (storage->nbytes() < copy_capacity) {
+        copy_capacity = storage->nbytes();
       }
-      at::DataPtr old_data = storage->set_data_ptr(std::move(new_data));
-      ptrdiff_t old_capacity = storage->nbytes();
-      storage->set_nbytes(size_bytes);
-      if (old_data != nullptr) {
-        ptrdiff_t copy_capacity = old_capacity;
-        if (storage->nbytes() < copy_capacity) {
-          copy_capacity = storage->nbytes();
-        }
-        if (copy_capacity > 0) {
-          memcpy(storage->data(), old_data.get(), copy_capacity);
-        }
+      if (copy_capacity > 0) {
+        memcpy(storage->data(), old_data.get(), copy_capacity);
       }
     }
   } else {

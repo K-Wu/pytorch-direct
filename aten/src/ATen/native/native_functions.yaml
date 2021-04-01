@@ -1576,6 +1576,7 @@
     CUDA: resize_cuda_
     QuantizedCPU: quantized_resize_cpu_
     Meta: resize_meta_
+    Unified: resize_
 
 - func: empty_quantized(int[] size, Tensor qtensor) -> Tensor
   variants: function
@@ -4905,6 +4906,12 @@
   device_guard: False
   dispatch:
     DefaultBackend: view_dtype
+
+- func: register_and_calculate_unified_address(Tensor(a) self) -> Tensor(a)
+  variants: method
+  device_guard: false
+  dispatch:
+    DefaultBackend: register_and_calculate_unified_address
 
 - func: put_(Tensor(a!) self, Tensor index, Tensor source, bool accumulate=False) -> Tensor(a!)
   variants: method

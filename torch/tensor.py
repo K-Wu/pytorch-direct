@@ -360,6 +360,11 @@ class Tensor(torch._C._TensorBase):
         This is a no-op if the underlying storage is already in shared memory
         and for CUDA tensors. Tensors in shared memory cannot be resized.
         """
+        # if self.is_unified:
+        #     real_storage_tensor=self.cpu().share_memory_()
+        #     new_tensor=real_storage_tensor.register_and_calculate_unified_address()
+        #     new_tensor.real_storage_tensor=real_storage_tensor
+        #     return new_tensor
         if has_torch_function_unary(self):
             return handle_torch_function(Tensor.share_memory_, (self,), self)
         self.storage().share_memory_()
