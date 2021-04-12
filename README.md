@@ -1,3 +1,6 @@
+# PyTorch-Direct
+This repo mainly contains the modified source code of PyTorch. For more comprehensive explanation of PyTorch-Direct, please go to [here](https://github.com/K-Wu/pytorch-direct_dgl).
+
 ![PyTorch Logo](https://github.com/pytorch/pytorch/blob/master/docs/source/_static/img/pytorch-logo-dark.png)
 
 --------------------------------------------------------------------------------
