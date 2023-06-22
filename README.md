@@ -1,5 +1,5 @@
 # PyTorch-Direct
-This repo mainly contains the modified source code of PyTorch. For more comprehensive explanation of PyTorch-Direct, please go to [here](https://github.com/K-Wu/pytorch-direct_dgl).
+This repo mainly contains the modified source code of PyTorch. For a more comprehensive explanation of PyTorch-Direct, please go to [here](https://github.com/K-Wu/pytorch-direct_dgl).
 
 ![PyTorch Logo](https://github.com/pytorch/pytorch/blob/master/docs/source/_static/img/pytorch-logo-dark.png)
 
@@ -133,22 +133,6 @@ No wrapper code needs to be written. You can see [a tutorial here](https://pytor
 
 ## Installation
 
-### Binaries
-Commands to install from binaries via Conda or pip wheels are on our website:
-[https://pytorch.org](https://pytorch.org)
-
-
-#### NVIDIA Jetson Platforms
-
-Python wheels for NVIDIA's Jetson Nano, Jetson TX2, and Jetson AGX Xavier are available via the following URLs:
-
-- Stable binaries:
-  - Python 3.6: https://nvidia.box.com/v/torch-stable-cp36-jetson-jp42
-- Rolling weekly binaries:
-  - Python 3.6: https://nvidia.box.com/v/torch-weekly-cp36-jetson-jp42
-
-They require JetPack 4.2 and above, and [@dusty-nv](https://github.com/dusty-nv) maintains them
-
 
 ### From Source
 
@@ -197,8 +181,9 @@ conda install -c conda-forge libuv=1.39
 
 #### Get the PyTorch Source
 ```bash
-git clone --recursive https://github.com/pytorch/pytorch
-cd pytorch
+#git clone --recursive https://github.com/pytorch/pytorch
+git clone --recursive https://github.com/K-Wu/pytorch-direct.git
+cd pytorch-direct
 # if you are updating an existing checkout
 git submodule sync
 git submodule update --init --recursive
