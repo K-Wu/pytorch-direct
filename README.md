@@ -171,14 +171,15 @@ ccmake build  # or cmake-gui build
 
 #### Using pre-built images
 
-You can also pull a pre-built docker image from Docker Hub and run with docker v19.03+
+You can also pull a docker image from Docker Hub and run with docker v19.03+
 
 ```bash
-docker run --gpus all --rm -ti --ipc=host pytorch/pytorch:latest
+docker run --gpus all --rm -ti --ipc=host pytorch/pytorch:1.10.0-cuda11.3-cudnn8-devel
 ```
+Use this image, uninstall pytorch, and install our project.
 
 Please note that PyTorch uses shared memory to share data between processes, so if torch multiprocessing is used (e.g.
-for multithreaded data loaders) the default shared memory segment size that container runs with is not enough, and you
+for multithreaded data loaders) the default shared memory segment size that the container runs with is not enough, and you
 should increase shared memory size either with `--ipc=host` or `--shm-size` command line options to `nvidia-docker run`.
 
 #### Building the image yourself
@@ -193,75 +194,8 @@ make -f docker.Makefile
 # images are tagged as docker.io/${your_docker_username}/pytorch
 ```
 
-### Building the Documentation
-
-To build documentation in various formats, you will need [Sphinx](http://www.sphinx-doc.org) and the
-readthedocs theme.
-
-```bash
-cd docs/
-pip install -r requirements.txt
-```
-You can then build the documentation by running ``make <format>`` from the
-``docs/`` folder. Run ``make`` to get a list of all available output formats.
-
-If you get a katex error run ```npm install katex```.  If it persists, try
-```npm install -g katex```
-
-### Previous Versions
-
-Installation instructions and binaries for previous PyTorch versions may be found
-on [Our Website](https://pytorch.org/previous-versions).
 
 
-## Getting Started
-
-Three-pointers to get you started:
-- [Tutorials: get you started with understanding and using PyTorch](https://pytorch.org/tutorials/)
-- [Examples: easy to understand pytorch code across all domains](https://github.com/pytorch/examples)
-- [The API Reference](https://pytorch.org/docs/)
-- [Glossary](https://github.com/pytorch/pytorch/blob/master/GLOSSARY.md)
-
-## Resources
-
-* [PyTorch.org](https://pytorch.org/)
-* [PyTorch Tutorials](https://pytorch.org/tutorials/)
-* [PyTorch Examples](https://github.com/pytorch/examples)
-* [PyTorch Models](https://pytorch.org/hub/)
-* [Intro to Deep Learning with PyTorch from Udacity](https://www.udacity.com/course/deep-learning-pytorch--ud188)
-* [Intro to Machine Learning with PyTorch from Udacity](https://www.udacity.com/course/intro-to-machine-learning-nanodegree--nd229)
-* [Deep Neural Networks with PyTorch from Coursera](https://www.coursera.org/learn/deep-neural-networks-with-pytorch)
-* [PyTorch Twitter](https://twitter.com/PyTorch)
-* [PyTorch Blog](https://pytorch.org/blog/)
-* [PyTorch YouTube](https://www.youtube.com/channel/UCWXI5YeOsh03QvJ59PMaXFw)
-
-## Communication
-* Forums: Discuss implementations, research, etc. https://discuss.pytorch.org
-* GitHub Issues: Bug reports, feature requests, install issues, RFCs, thoughts, etc.
-* Slack: The [PyTorch Slack](https://pytorch.slack.com/) hosts a primary audience of moderate to experienced PyTorch users and developers for general chat, online discussions, collaboration, etc. If you are a beginner looking for help, the primary medium is [PyTorch Forums](https://discuss.pytorch.org). If you need a slack invite, please fill this form: https://goo.gl/forms/PP1AGvNHpSaJP8to1
-* Newsletter: No-noise, a one-way email newsletter with important announcements about PyTorch. You can sign-up here: https://eepurl.com/cbG0rv
-* Facebook Page: Important announcements about PyTorch. https://www.facebook.com/pytorch
-* For brand guidelines, please visit our website at [pytorch.org](https://pytorch.org/)
-
-## Releases and Contributing
-
-PyTorch has a 90-day release cycle (major releases). Please let us know if you encounter a bug by [filing an issue](https://github.com/pytorch/pytorch/issues).
-
-We appreciate all contributions. If you are planning to contribute back bug-fixes, please do so without any further discussion.
-
-If you plan to contribute new features, utility functions, or extensions to the core, please first open an issue and discuss the feature with us.
-Sending a PR without discussion might end up resulting in a rejected PR because we might be taking the core in a different direction than you might be aware of.
-
-To learn more about making a contribution to Pytorch, please see our [Contribution page](CONTRIBUTING.md).
-
-## The Team
-
-PyTorch is a community-driven project with several skillful engineers and researchers contributing to it.
-
-PyTorch is currently maintained by [Adam Paszke](https://apaszke.github.io/), [Sam Gross](https://github.com/colesbury), [Soumith Chintala](http://soumith.ch) and [Gregory Chanan](https://github.com/gchanan) with major contributions coming from hundreds of talented individuals in various forms and means.
-A non-exhaustive but growing list needs to mention: Trevor Killeen, Sasank Chilamkurthy, Sergey Zagoruyko, Adam Lerer, Francisco Massa, Alykhan Tejani, Luca Antiga, Alban Desmaison, Andreas Koepf, James Bradbury, Zeming Lin, Yuandong Tian, Guillaume Lample, Marat Dukhan, Natalia Gimelshein, Christian Sarofeen, Martin Raison, Edward Yang, Zachary Devito.
-
-Note: This project is unrelated to [hughperkins/pytorch](https://github.com/hughperkins/pytorch) with the same name. Hugh is a valuable contributor to the Torch community and has helped with many things Torch and PyTorch.
 
 ## License
 
