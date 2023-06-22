@@ -173,10 +173,12 @@ ccmake build  # or cmake-gui build
 
 You can also pull a docker image from Docker Hub and run with docker v19.03+
 
-```bash
-docker run --gpus all --rm -ti --ipc=host pytorch/pytorch:1.10.0-cuda11.3-cudnn8-devel
-```
 Use this image, uninstall pytorch, and install our project.
+```bash
+docker run --gpus all --rm -ti --ipc=host pytorch/pytorch:1.11.0-cuda11.3-cudnn8-devel
+pip uninstall -y torch torchelastic torchtext torchvision
+```
+
 
 Please note that PyTorch uses shared memory to share data between processes, so if torch multiprocessing is used (e.g.
 for multithreaded data loaders) the default shared memory segment size that the container runs with is not enough, and you
