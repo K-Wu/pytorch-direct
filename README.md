@@ -57,7 +57,6 @@ conda install -c conda-forge libuv=1.39
 #git clone --recursive https://github.com/pytorch/pytorch
 git clone --recursive https://github.com/K-Wu/pytorch-direct.git
 cd pytorch-direct
-# if you are updating an existing checkout
 git submodule sync
 git submodule update --init --recursive
 ```
@@ -195,9 +194,6 @@ unset to use the default.
 make -f docker.Makefile
 # images are tagged as docker.io/${your_docker_username}/pytorch
 ```
-
-
-
 
 ## License
 
