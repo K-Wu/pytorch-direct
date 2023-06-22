@@ -65,6 +65,7 @@ git submodule update --init --recursive
 #### Install PyTorch
 On Linux
 ```bash
+export  $LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
 export CMAKE_PREFIX_PATH=${CONDA_PREFIX:-"$(dirname $(which conda))/../"}
 python setup.py install
 ```
