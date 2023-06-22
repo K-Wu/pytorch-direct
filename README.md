@@ -36,7 +36,7 @@ conda install -y numpy ninja pyyaml mkl mkl-include setuptools cmake cffi typing
 On Linux
 ```bash
 # Add LAPACK support for the GPU if needed
-conda install -c pytorch magma-cuda113 # or the magma-cuda* that matches your CUDA version from https://anaconda.org/pytorch/repo
+conda install -y -c pytorch magma-cuda113 # or the magma-cuda* that matches your CUDA version from https://anaconda.org/pytorch/repo
 ```
 
 On MacOS
